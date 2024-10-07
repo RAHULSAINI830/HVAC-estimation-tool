@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HVAC Estimate Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      font-size: 1.2rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 30px;
+      background-color: #e9ecef;
+      padding: 20px;
+      border-radius: 10px;
+      display: none; /* Hide initially */
+    }
+
+    .result p {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HVAC Estimate Tool</h1>
+    <form id="estimate-form">
+      <div class="form-group">
+        <label for="systemType">System Type</label>
+        <select id="systemType" name="systemType" required>
+          <option value="Heating + Cooling">Heating + Cooling</option>
+          <option value="Heating">Heating</option>
+          <option value="Cooling">Cooling</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="areaSize">Area Size</label>
+        <select id="areaSize" name="areaSize" required>
+          <option value="Small">Small</option>
+          <option value="Medium">Medium</option>
+          <option value="Large">Large</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Indoor Unit Location</label>
+        <select id="location" name="location" required>
+          <option value="Crawlspace">Crawlspace</option>
+          <option value="Wall Mounted">Wall Mounted</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="energySource">Energy Source</label>
+        <select id="energySource" name="energySource" required>
+          <option value="Natural Gas or Propane">Natural Gas or Propane</option>
+          <option value="Electric (heat pump)">Electric (heat pump)</option>
+          <option value="Fuel Oil">Fuel Oil</option>
+          <option value="Geothermal">Geothermal</option>
+        </select>
+      </div>
+
+      <button type="submit">Get Estimate</button>
+    </form>
+
+    <div id="result" class="result">
+      <h2>Estimate Result</h2>
+      <p><strong>System Recommendation:</strong> <span id="systemRecommendation"></span></p>
+      <p><strong>Capacity Recommendation:</strong> <span id="capacityRecommendation"></span></p>
+      <p><strong>Energy Source Recommendation:</strong> <span id="energyRecommendation"></span></p>
+      <p><strong>Estimated Cost:</strong> $<span id="estimatedCost"></span></p>
+    </div>
+  </div>
+
+  <script>
+    // Logic to get the HVAC system type based on user input
+    function getSystemType(systemChoice) {
+      switch (systemChoice) {
+        case 'Heating + Cooling':
+          return 'Heat Pump or Hybrid System';
+        case 'Heating':
+          return 'Furnace or Boiler';
+        case 'Cooling':
+          return 'Air Conditioner (Central AC or Ductless Mini-Split)';
+        default:
+          return 'Unknown system';
+      }
+    }
+
+    // Logic to get the HVAC system capacity based on the area size
+    function getSystemCapacity(areaSize) {
+      switch (areaSize) {
+        case 'Small':
+          return '1.5-2 tons (18,000-24,000 BTUs)';
+        case 'Medium':
+          return '2.5-3 tons (30,000-36,000 BTUs)';
+        case 'Large':
+          return '3.5-5 tons (42,000-60,000 BTUs)';
+        default:
+          return 'Unknown size';
+      }
+    }
+
+    // Logic to adjust the price based on indoor unit location
+    function getLocationFactor(location) {
+      switch (location) {
+        case 'Crawlspace':
+          return 1.2; // 20% higher installation cost
+        case 'Wall Mounted':
+          return 1.1; // 10% higher installation cost
+        default:
+          return 1.0; // Standard cost for other locations
+      }
+    }
+
+    // Logic to adjust recommendations based on the energy source
+    function getEnergySourceAdjustment(energySource) {
+      switch (energySource) {
+        case 'Natural Gas or Propane':
+          return 'Recommend Gas Furnace or Hybrid System';
+        case 'Electric (heat pump)':
+          return 'Recommend Heat Pump';
+        case 'Fuel Oil':
+          return 'Recommend Oil Furnace';
+        case 'Geothermal':
+          return 'Recommend Geothermal System';
+        default:
+          return 'Standard System';
+      }
+    }
+
+    // Calculate the final estimated cost based on system choice, area, location, and energy source
+    function calculateEstimate(systemType, areaSize, location, energySource) {
+      const baseCost = {
+        'Heat Pump or Hybrid System': 5000,
+        'Furnace or Boiler': 4000,
+        'Air Conditioner (Central AC or Ductless Mini-Split)': 3000,
+        'Geothermal System': 10000,
+      };
+
+      const system = getSystemType(systemType);
+      let cost = baseCost[system] || 4000;
+
+      if (areaSize === 'Medium') {
+        cost += 1000;
+      } else if (areaSize === 'Large') {
+        cost += 2000;
+      }
+
+      const locationFactor = getLocationFactor(location);
+      cost *= locationFactor;
+
+      if (energySource === 'Fuel Oil') {
+        cost += 500;
+      }
+
+      return cost;
+    }
+
+    // Event listener for form submission
+    document.getElementById('estimate-form').addEventListener('submit', function (e) {
+      e.preventDefault(); // Prevent form from submitting the default way
+
+      // Get form values
+      const systemType = document.getElementById('systemType').value;
+      const areaSize = document.getElementById('areaSize').value;
+      const location = document.getElementById('location').value;
+      const energySource = document.getElementById('energySource').value;
+
+      // Calculate results
+      const systemRecommendation = getSystemType(systemType);
+      const capacityRecommendation = getSystemCapacity(areaSize);
+      const energyRecommendation = getEnergySourceAdjustment(energySource);
+      const estimatedCost = calculateEstimate(systemType, areaSize, location, energySource);
+
+      // Show the result in the UI
+      document.getElementById('systemRecommendation').textContent = systemRecommendation;
+      document.getElementById('capacityRecommendation').textContent = capacityRecommendation;
+      document.getElementById('energyRecommendation').textContent = energyRecommendation;
+      document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(2);
+
+      // Display the result div
+      document.querySelector('.result').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
