@@ -1,240 +1,951 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HVAC Estimate Tool</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimator Portal</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafc;
+            margin: 0;
+            padding: 0;
+        }
 
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    }
+        .container {
+            max-width: 550px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+        /* Global Back Button as an Icon */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            width: 40px;
+        }
 
-    .form-group {
-      margin-bottom: 15px;
-    }
+        h1 {
+            font-size: 2.8rem;
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-    }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
 
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+        .card {
+            padding: 40px;
+            background-color: #f9f9f9;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    button {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      font-size: 1.2rem;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.15);
+        }
 
-    button:hover {
-      background-color: #0056b3;
-    }
+        .card h2 {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
 
-    .result {
-      margin-top: 30px;
-      background-color: #e9ecef;
-      padding: 20px;
-      border-radius: 10px;
-      display: none; /* Hide initially */
-    }
+        .card p {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
 
-    .result p {
-      margin: 10px 0;
-    }
-  </style>
+        .card button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            color: white;
+            background: linear-gradient(135deg, #00a8ff, #74b9ff);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card button:hover {
+            background: linear-gradient(135deg, #0984e3, #74b9ff);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            height: 12px;
+            position: relative;
+        }
+
+        .progress-bar .progress {
+            background: linear-gradient(135deg, #00a8ff, #74b9ff);
+            height: 100%;
+            border-radius: 10px;
+            width: 0;
+            transition: width 0.4s ease;
+        }
+
+        .step {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .step.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .form-row input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-row input:focus {
+            border-color: #00a8ff;
+            outline: none;
+        }
+
+        /* Option Buttons */
+        .options {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .options label {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            align-items: center;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .options label.selected {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+            transform: scale(1.05);
+        }
+
+        .options img {
+            max-width: 80px;
+            margin-bottom: 15px;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: -10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00a8ff, #74b9ff);
+            padding: 15px 20px;
+            color: white;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #0984e3, #74b9ff);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Confirmation Page Enhancement */
+        .confirmation {
+            padding: 30px;
+            background-color: #eaf4ff;
+            border-radius: 15px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .confirmation p {
+            font-size: 1.4rem;
+            color: #007bff;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .confirmation strong {
+            color: #333;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .options {
+                flex-direction: column;
+            }
+
+            .options label {
+                width: 100%;
+            }
+        }
+
+        /* Hide calculator sections by default */
+        .calculator-container {
+            display: none;
+        }
+        .grid1{
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>HVAC Estimate Tool</h1>
-    <form id="estimate-form">
-      <div class="form-group">
-        <label for="systemType">System Type</label>
-        <select id="systemType" name="systemType" required>
-          <option value="Heating + Cooling">Heating + Cooling</option>
-          <option value="Heating">Heating</option>
-          <option value="Cooling">Cooling</option>
-        </select>
-      </div>
 
-      <div class="form-group">
-        <label for="areaSize">Area Size</label>
-        <select id="areaSize" name="areaSize" required>
-          <option value="Small">Small</option>
-          <option value="Medium">Medium</option>
-          <option value="Large">Large</option>
-        </select>
-      </div>
+    <div class="container" id="grid-page">
+        <h1>Choose Your Estimator</h1>
+        <div class="grid">
+            <!-- Water Heater Estimator Card -->
+            <div class="card" onclick="startCalculator('water-heater-calculator')">
+                <h2> HVAC Water Heater Estimator</h2>
+                <p>Estimate the cost of your new HVAC water heater based on your needs and preferences.</p>
+                <button>Start Water Heater Estimator</button>
+            </div>
 
-      <div class="form-group">
-        <label for="location">Indoor Unit Location</label>
-        <select id="location" name="location" required>
-          <option value="Crawlspace">Crawlspace</option>
-          <option value="Wall Mounted">Wall Mounted</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="energySource">Energy Source</label>
-        <select id="energySource" name="energySource" required>
-          <option value="Natural Gas or Propane">Natural Gas or Propane</option>
-          <option value="Electric (heat pump)">Electric (heat pump)</option>
-          <option value="Fuel Oil">Fuel Oil</option>
-          <option value="Geothermal">Geothermal</option>
-        </select>
-      </div>
-
-      <button type="submit">Get Estimate</button>
-    </form>
-
-    <div id="result" class="result">
-      <h2>Estimate Result</h2>
-      <p><strong>System Recommendation:</strong> <span id="systemRecommendation"></span></p>
-      <p><strong>Capacity Recommendation:</strong> <span id="capacityRecommendation"></span></p>
-      <p><strong>Energy Source Recommendation:</strong> <span id="energyRecommendation"></span></p>
-      <p><strong>Estimated Cost:</strong> $<span id="estimatedCost"></span></p>
+            <!-- Other Estimator Card (New Second Estimator) -->
+            <div class="card" onclick="startCalculator('new-water-heater-calculator')">
+                <h2> Water Heater Installation</h2>
+                <p>Estimate the cost of installing a new water heater based on removal and preferences.</p>
+                <button>Start New Water Heater Estimator</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // Logic to get the HVAC system type based on user input
-    function getSystemType(systemChoice) {
-      switch (systemChoice) {
-        case 'Heating + Cooling':
-          return 'Heat Pump or Hybrid System';
-        case 'Heating':
-          return 'Furnace or Boiler';
-        case 'Cooling':
-          return 'Air Conditioner (Central AC or Ductless Mini-Split)';
-        default:
-          return 'Unknown system';
-      }
-    }
+    <!-- Water Heater Estimator Section -->
+    <div class="container calculator-container calculator-section" id="water-heater-calculator">
+        <img src="/left-arrow.png" class="back-button" alt="Back" onclick="handleBack()">
+        <br><br><br>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <h1>Water Heater Estimator</h1>
 
-    // Logic to get the HVAC system capacity based on the area size
-    function getSystemCapacity(areaSize) {
-      switch (areaSize) {
-        case 'Small':
-          return '1.5-2 tons (18,000-24,000 BTUs)';
-        case 'Medium':
-          return '2.5-3 tons (30,000-36,000 BTUs)';
-        case 'Large':
-          return '3.5-5 tons (42,000-60,000 BTUs)';
-        default:
-          return 'Unknown size';
-      }
-    }
+        <!-- Step 1: Name and Phone -->
+        <div class="step active" id="step1">
+            <h2>Let's get started!</h2>
+            <div class="form-row">
+                <input type="text" id="fullName" placeholder="Full Name" required>
+                <input type="tel" id="phoneNumber" placeholder="Phone Number" required pattern="^\+1\d{10}$">
+            </div>
+            <div class="error" id="step1-error">Please enter both your name and a valid US phone number (+1XXXXXXXXXX).
+            </div>
+            <div class="form-group">
+                <button onclick="nextStep(2, 'fullName', 'phoneNumber')">Next</button>
+            </div>
+        </div>
 
-    // Logic to adjust the price based on indoor unit location
-    function getLocationFactor(location) {
-      switch (location) {
-        case 'Crawlspace':
-          return 1.2; // 20% higher installation cost
-        case 'Wall Mounted':
-          return 1.1; // 10% higher installation cost
-        default:
-          return 1.0; // Standard cost for other locations
-      }
-    }
+        <!-- Step 2: Address Page -->
+        <div class="step" id="step2">
+            <h2>Where is your home located?</h2>
+            <div class="form-group address-row form-row">
+                <input type="text" id="address" placeholder="Street Address" required>
+                <input type="text" id="apt" placeholder="Apt/Unit (Optional)">
+            </div>
+            <div class="error" id="step2-error">Please enter your street address.</div>
+            <div class="form-group">
+                <button onclick="nextStep(3, 'address')">Next</button>
+            </div>
+        </div>
 
-    // Logic to adjust recommendations based on the energy source
-    function getEnergySourceAdjustment(energySource) {
-      switch (energySource) {
-        case 'Natural Gas or Propane':
-          return 'Recommend Gas Furnace or Hybrid System';
-        case 'Electric (heat pump)':
-          return 'Recommend Heat Pump';
-        case 'Fuel Oil':
-          return 'Recommend Oil Furnace';
-        case 'Geothermal':
-          return 'Recommend Geothermal System';
-        default:
-          return 'Standard System';
-      }
-    }
+        <!-- Step 3: Type of Water Heater -->
+        <div class="step" id="step3">
+            <h2>What kind of water heater are you interested in?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-boiler.png" alt="Tank">
+                    <span>Tank</span>
+                    <input type="radio" name="heaterType" value="Tank" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-heater (1).png" alt="Tankless">
+                    <span>Tankless</span>
+                    <input type="radio" name="heaterType" value="Tankless">
+                </label>
+            </div>
+            <div class="error" id="step3-error">Please select a water heater type.</div>
+            <div class="form-group">
+                <button onclick="nextStep(4, 'heaterType')">Next</button>
+            </div>
+        </div>
 
-    // Calculate the final estimated cost based on system choice, area, location, and energy source
-    function calculateEstimate(systemType, areaSize, location, energySource) {
-      const baseCost = {
-        'Heat Pump or Hybrid System': 5000,
-        'Furnace or Boiler': 4000,
-        'Air Conditioner (Central AC or Ductless Mini-Split)': 3000,
-        'Geothermal System': 10000,
-      };
+        <!-- Step 4: Location of Water Heater -->
+        <div class="step" id="step4">
+            <h2>Where is your water heater located?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/location/basement.png" alt="Basement">
+                    <span>Basement</span>
+                    <input type="radio" name="location" value="Basement" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/location/basement (1).png" alt="Crawlspace">
+                    <span>Crawlspace</span>
+                    <input type="radio" name="location" value="Crawlspace">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/location/carport.png" alt="Garage">
+                    <span>Garage</span>
+                    <input type="radio" name="location" value="Garage">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/location/attic.png" alt="Attic">
+                    <span>Attic</span>
+                    <input type="radio" name="location" value="Attic">
+                </label>
+            </div>
+            <div class="error" id="step4-error">Please select the location of your water heater.</div>
+            <div class="form-group">
+                <button onclick="nextStep(5, 'location')">Next</button>
+            </div>
+        </div>
 
-      const system = getSystemType(systemType);
-      let cost = baseCost[system] || 4000;
+        <!-- Step 5: Energy Source -->
+        <div class="step" id="step5">
+            <h2>How is the water heater powered?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/gas/heater (1).png" alt="Gas">
+                    <span>Natural Gas or Propane</span>
+                    <input type="radio" name="energySource" value="Natural Gas or Propane" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/gas/water-heater (2).png" alt="Electric">
+                    <span>Electric</span>
+                    <input type="radio" name="energySource" value="Electric">
+                </label>
+            </div>
+            <div class="error" id="step5-error">Please select the energy source.</div>
+            <div class="form-group">
+                <button onclick="nextStep(6, 'energySource')">Next</button>
+            </div>
+        </div>
 
-      if (areaSize === 'Medium') {
-        cost += 1000;
-      } else if (areaSize === 'Large') {
-        cost += 2000;
-      }
+        <!-- Step 6: Size -->
+        <div class="step" id="step6">
+            <h2>What size water heater do you need?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="https://example.com/40gallon-icon.png" alt="40 Gallon">
+                    <span>40 Gallon</span>
+                    <input type="radio" name="size" value="40 gallon" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="https://example.com/50gallon-icon.png" alt="50 Gallon">
+                    <span>50 Gallon</span>
+                    <input type="radio" name="size" value="50 gallon">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="https://example.com/60gallon-icon.png" alt="60 Gallon">
+                    <span>60 Gallon</span>
+                    <input type="radio" name="size" value="60 gallon">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="https://example.com/80gallon-icon.png" alt="80 Gallon">
+                    <span>80 Gallon</span>
+                    <input type="radio" name="size" value="80 gallon">
+                </label>
+            </div>
+            <div class="error" id="step6-error">Please select the water heater size.</div>
+            <div class="form-group">
+                <button onclick="nextStep(7, 'size')">Next</button>
+            </div>
+        </div>
 
-      const locationFactor = getLocationFactor(location);
-      cost *= locationFactor;
+        <!-- Step 7: Email Address -->
+        <div class="step" id="step7">
+            <h2>Enter your email address</h2>
+            <div class="form-group form-row">
+                <input type="email" id="email" placeholder="Email Address" required
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+            </div>
+            <div class="error" id="step7-error">Please enter a valid email address.</div>
+            <div class="form-group">
+                <button onclick="showConfirmation()">Next</button>
+            </div>
+        </div>
 
-      if (energySource === 'Fuel Oil') {
-        cost += 500;
-      }
+        <!-- Step 8: Confirmation -->
+        <div class="step" id="step8">
+            <h2>Confirm Your Details</h2>
+            <div class="confirmation" id="confirmationSummary"></div>
+            <div class="form-group">
+                <button onclick="submitForm()">Confirm and Submit</button>
+            </div>
+        </div>
 
-      return cost;
-    }
+        <!-- Step 9: Result -->
+        <div class="step" id="step9">
+            <h2>Estimate Result</h2>
+            <div class="result">
+                <p><strong>Water Heater Type:</strong> <span id="resHeaterType"></span></p>
+                <p><strong>Location:</strong> <span id="resLocation"></span></p>
+                <p><strong>Energy Source:</strong> <span id="resEnergySource"></span></p>
+                <p><strong>Size:</strong> <span id="resSize"></span></p>
+                <p><strong>Estimated Cost:</strong> $<span id="resCost"></span></p>
+            </div>
+            <div class="form-group">
+                <button onclick="restartForm()">Start Over</button>
+            </div>
+        </div>
+    </div>
 
-    // Event listener for form submission
-    document.getElementById('estimate-form').addEventListener('submit', function (e) {
-      e.preventDefault(); // Prevent form from submitting the default way
+    <!-- Second Estimator Section (New Water Heater Installation) -->
+    <div class="container calculator-container calculator-section" id="new-water-heater-calculator">
+        <img src="/left-arrow.png" class="back-button" alt="Back" onclick="handleBack()">
+        <br><br><br>
+        <div class="progress-bar">
+            <div class="progress" id="progress-new"></div>
+        </div>
+        <h1>Water Heater Installation Estimator</h1>
 
-      // Get form values
-      const systemType = document.getElementById('systemType').value;
-      const areaSize = document.getElementById('areaSize').value;
-      const location = document.getElementById('location').value;
-      const energySource = document.getElementById('energySource').value;
+        <!-- Step 1: Name and Phone -->
+        <div class="step active" id="step-new-1">
+            <h2>Let's get started!</h2>
+            <div class="form-row">
+                <input type="text" id="fullNameNew" placeholder="Full Name" required>
+                <input type="tel" id="phoneNumberNew" placeholder="Phone Number" required pattern="^\+1\d{10}$">
+            </div>
+            <div class="error" id="step-new-1-error">Please enter both your name and a valid US phone number
+                (+1XXXXXXXXXX).</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(2, 'fullNameNew', 'phoneNumberNew')">Next</button>
+            </div>
+        </div>
 
-      // Calculate results
-      const systemRecommendation = getSystemType(systemType);
-      const capacityRecommendation = getSystemCapacity(areaSize);
-      const energyRecommendation = getEnergySourceAdjustment(energySource);
-      const estimatedCost = calculateEstimate(systemType, areaSize, location, energySource);
+        <!-- Step 2: Address Page -->
+        <div class="step" id="step-new-2">
+            <h2>Where is your home located?</h2>
+            <div class="form-group address-row form-row">
+                <input type="text" id="addressNew" placeholder="Street Address" required>
+                <input type="text" id="aptNew" placeholder="Apt/Unit (Optional)">
+            </div>
+            <div class="error" id="step-new-2-error">Please enter your street address.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(3, 'addressNew')">Next</button>
+            </div>
+        </div>
 
-      // Show the result in the UI
-      document.getElementById('systemRecommendation').textContent = systemRecommendation;
-      document.getElementById('capacityRecommendation').textContent = capacityRecommendation;
-      document.getElementById('energyRecommendation').textContent = energyRecommendation;
-      document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(2);
+        <!-- Step 3: What kind of water heater are you interested in today? -->
+        <div class="step" id="step-new-3">
+            <h2>What kind of water heater are you interested in today?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-boiler.png" alt="Tank">
+                    <span>Tank</span>
+                    <input type="radio" name="heaterTypeNew" value="Tank" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-heater (1).png" alt="Tankless">
+                    <span>Tankless</span>
+                    <input type="radio" name="heaterTypeNew" value="Tankless">
+                </label>
+            </div>
+            <div class="error" id="step-new-3-error">Please select a water heater type.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(4, 'heaterTypeNew')">Next</button>
+            </div>
+        </div>
 
-      // Display the result div
-      document.querySelector('.result').style.display = 'block';
-    });
-  </script>
+        <!-- Step 4: What type of water heater are you having removed? -->
+        <div class="step" id="step-new-4">
+            <h2>What type of water heater are you having removed?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-boiler.png" alt="Tank">
+                    <span>Tank</span>
+                    <input type="radio" name="removeTypeNew" value="Tank" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/Tank images/water-heater (1).png" alt="Tankless">
+                    <span>Tankless</span>
+                    <input type="radio" name="removeTypeNew" value="Tankless">
+                </label>
+            </div>
+            <div class="error" id="step-new-4-error">Please select the water heater to be removed.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(5, 'removeTypeNew')">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Where is your water heater located? -->
+        <div class="step" id="step-new-5">
+            <h2>Where is your water heater located?</h2>
+            <div class="options gird1">
+                <div>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/basement.png" alt="Basement">
+                        <span>Basement</span>
+                        <input type="radio" name="locationNew" value="Basement" required>
+                    </label>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/basement (1).png" alt="Crawlspace">
+                        <span>Crawlspace</span>
+                        <input type="radio" name="locationNew" value="Crawlspace">
+                    </label>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/carport.png" alt="Garage">
+                        <span>Garage</span>
+                        <input type="radio" name="locationNew" value="Garage">
+                    </label>
+                </div>
+                <div>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/attic.png" alt="Attic">
+                        <span>Attic</span>
+                        <input type="radio" name="locationNew" value="Attic">
+                    </label>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/door.png" alt="Closet">
+                        <span>Closet</span>
+                        <input type="radio" name="locationNew" value="Closet">
+                    </label>
+                    <label onclick="selectOption(this)">
+                        <img src="/location/hut.png" alt="Outside">
+                        <span>Outside</span>
+                        <input type="radio" name="locationNew" value="Outside">
+                    </label>
+                </div>
+            </div>
+            <div class="error" id="step-new-5-error">Please select the location of your water heater.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(6, 'locationNew')">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 6: How is the water heater in your home currently powered? -->
+        <div class="step" id="step-new-6">
+            <h2>How is the water heater in your home currently powered?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <img src="/tank2/gas-cylinder.png" alt="">
+                    <span>Natural Gas or Propane</span>
+                    <input type="radio" name="energySourceNew" value="Natural Gas or Propane" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/gas/water-heater (2).png" alt="Electric">
+                    <span>Electric (standard)</span>
+                    <input type="radio" name="energySourceNew" value="Electric (standard)">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/tank2/heater (2).png" alt="">
+                    <span>Electric (heat pump)</span>
+                    <input type="radio" name="energySourceNew" value="Electric (heat pump)">
+                </label>
+                <label onclick="selectOption(this)">
+                    <img src="/tank2/tank-truck.png" alt="">
+                    <span>Fuel Oil</span>
+                    <input type="radio" name="energySourceNew" value="Fuel Oil">
+                </label>
+            </div>
+            <div class="error" id="step-new-6-error">Please select the energy source.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(7, 'energySourceNew')">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 7: How many full bathrooms do you have? -->
+        <div class="step" id="step-new-7">
+            <h2>How many full bathrooms do you have?</h2>
+            <div class="options">
+                <label onclick="selectOption(this)">
+                    <span>1-2 bathrooms</span>
+                    <input type="radio" name="bathroomsNew" value="1-2 bathrooms" required>
+                </label>
+                <label onclick="selectOption(this)">
+                    <span>3-4 bathrooms</span>
+                    <input type="radio" name="bathroomsNew" value="3-4 bathrooms">
+                </label>
+                <label onclick="selectOption(this)">
+                    <span>5+ bathrooms</span>
+                    <input type="radio" name="bathroomsNew" value="5+ bathrooms">
+                </label>
+            </div>
+            <div class="error" id="step-new-7-error">Please select the number of bathrooms.</div>
+            <div class="form-group">
+                <button onclick="nextStepNew(8, 'bathroomsNew')">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 8: Email Address -->
+        <div class="step" id="step-new-8">
+            <h2>Enter your email address</h2>
+            <div class="form-group form-row">
+                <input type="email" id="emailNew" placeholder="Email Address" required
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+            </div>
+            <div class="error" id="step-new-8-error">Please enter a valid email address.</div>
+            <div class="form-group">
+                <button onclick="showConfirmationNew()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 9: Confirmation -->
+        <div class="step" id="step-new-9">
+            <h2>Confirm Your Details</h2>
+            <div class="confirmation" id="confirmationSummaryNew"></div>
+            <div class="form-group">
+                <button onclick="submitFormNew()">Confirm and Submit</button>
+            </div>
+        </div>
+
+        <!-- Step 10: Result -->
+        <div class="step" id="step-new-10">
+            <h2>Estimate Result</h2>
+            <div class="result">
+                <p><strong>Water Heater Type:</strong> <span id="resHeaterTypeNew"></span></p>
+                <p><strong>Removed Type:</strong> <span id="resRemoveTypeNew"></span></p>
+                <p><strong>Location:</strong> <span id="resLocationNew"></span></p>
+                <p><strong>Energy Source:</strong> <span id="resEnergySourceNew"></span></p>
+                <p><strong>Bathrooms:</strong> <span id="resBathroomsNew"></span></p>
+                <p><strong>Estimated Cost:</strong> $<span id="resCostNew"></span></p>
+            </div>
+            <div class="form-group">
+                <button onclick="restartFormNew()">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle the global back button
+        function handleBack() {
+            const activeStep = document.querySelector('.step.active');
+            if (activeStep && activeStep.id === 'step1') {
+                document.getElementById('grid-page').style.display = 'block';
+                document.querySelectorAll('.calculator-section').forEach(section => section.style.display = 'none');
+            } else {
+                const stepNumber = parseInt(activeStep.id.replace('step', ''));
+                if (stepNumber > 1) {
+                    previousStep(stepNumber - 1);
+                }
+            }
+        }
+
+        function startCalculator(calculatorId) {
+            document.getElementById('grid-page').style.display = 'none';
+            document.getElementById(calculatorId).style.display = 'block';
+        }
+
+        function nextStep(step, ...requiredFields) {
+            let valid = true;
+            requiredFields.forEach(field => {
+                let input;
+                if (document.querySelector(`input[name="${field}"]`)) {
+                    input = document.querySelector(`input[name="${field}"]:checked`);
+                } else {
+                    input = document.getElementById(field);
+                }
+                if (!input || !input.value) {
+                    valid = false;
+                } else if (field === 'phoneNumber') {
+                    const phonePattern = /^\+1\d{10}$/;
+                    if (!phonePattern.test(input.value)) {
+                        valid = false;
+                    }
+                } else if (field === 'email') {
+                    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+                    if (!emailPattern.test(input.value)) {
+                        valid = false;
+                    }
+                }
+            });
+            const errorElement = document.getElementById(`step${step - 1}-error`);
+            if (!valid) {
+                if (errorElement) {
+                    errorElement.style.display = 'block';
+                }
+                return;
+            }
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            updateProgress(step);
+        }
+
+        function updateProgress(step) {
+            const progress = document.getElementById('progress');
+            const steps = 9;
+            const percentage = (step / steps) * 100;
+            progress.style.width = percentage + '%';
+        }
+
+        function previousStep(step) {
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            updateProgress(step);
+        }
+
+        function selectOption(element) {
+            const labels = document.querySelectorAll('.options label');
+            labels.forEach(label => label.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function showConfirmation() {
+            const heaterType = document.querySelector('input[name="heaterType"]:checked');
+            const location = document.querySelector('input[name="location"]:checked');
+            const energySource = document.querySelector('input[name="energySource"]:checked');
+            const size = document.querySelector('input[name="size"]:checked');
+            const email = document.getElementById('email').value;
+
+            if (!heaterType || !location || !energySource || !size || !email) {
+                document.getElementById('step7-error').style.display = 'block';
+                return;
+            }
+            document.getElementById('step7-error').style.display = 'none';
+
+            const confirmationSummary = `
+    <p><strong>Water Heater Type:</strong> ${heaterType.value}</p>
+    <p><strong>Location:</strong> ${location.value}</p>
+    <p><strong>Energy Source:</strong> ${energySource.value}</p>
+    <p><strong>Size:</strong> ${size.value}</p>
+    <p><strong>Email:</strong> ${email}</p>
+  `;
+            document.getElementById('confirmationSummary').innerHTML = confirmationSummary;
+            nextStep(8);
+        }
+
+        function submitForm() {
+            const heaterType = document.querySelector('input[name="heaterType"]:checked').value;
+            const location = document.querySelector('input[name="location"]:checked').value;
+            const energySource = document.querySelector('input[name="energySource"]:checked').value;
+            const size = document.querySelector('input[name="size"]:checked').value;
+
+            document.getElementById('resHeaterType').textContent = heaterType;
+            document.getElementById('resLocation').textContent = location;
+            document.getElementById('resEnergySource').textContent = energySource;
+            document.getElementById('resSize').textContent = size;
+
+            let cost = 0;
+            if (heaterType === 'Tankless') {
+                cost += 1800;
+            } else {
+                cost += 1200;
+            }
+            if (size === '50 gallon') {
+                cost += 300;
+            } else if (size === '60 gallon') {
+                cost += 400;
+            } else if (size === '80 gallon') {
+                cost += 500;
+            }
+            if (energySource === 'Natural Gas or Propane') {
+                cost += 400;
+            } else {
+                cost += 150;
+            }
+
+            document.getElementById('resCost').textContent = cost.toFixed(2);
+            nextStep(9);
+        }
+
+        function restartForm() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+
+            const labels = document.querySelectorAll('.options label');
+            labels.forEach(label => label.classList.remove('selected'));
+
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(s => s.classList.remove('active'));
+
+            document.getElementById('step1').classList.add('active');
+            updateProgress(1);
+        }
+
+        // ---- New Water Heater Estimator Logic ----
+
+        function nextStepNew(step, ...requiredFields) {
+            let valid = true;
+            requiredFields.forEach(field => {
+                let input;
+                if (document.querySelector(`input[name="${field}"]`)) {
+                    input = document.querySelector(`input[name="${field}"]:checked`);
+                } else {
+                    input = document.getElementById(field);
+                }
+                if (!input || !input.value) {
+                    valid = false;
+                } else if (field === 'phoneNumberNew') {
+                    const phonePattern = /^\+1\d{10}$/;
+                    if (!phonePattern.test(input.value)) {
+                        valid = false;
+                    }
+                } else if (field === 'emailNew') {
+                    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+                    if (!emailPattern.test(input.value)) {
+                        valid = false;
+                    }
+                }
+            });
+            const errorElement = document.getElementById(`step-new-${step - 1}-error`);
+            if (!valid) {
+                if (errorElement) {
+                    errorElement.style.display = 'block';
+                }
+                return;
+            }
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.getElementById('step-new-' + step).classList.add('active');
+            updateProgressNew(step);
+        }
+
+        function updateProgressNew(step) {
+            const progress = document.getElementById('progress-new');
+            const steps = 10;
+            const percentage = (step / steps) * 100;
+            progress.style.width = percentage + '%';
+        }
+
+        function showConfirmationNew() {
+            const heaterTypeNew = document.querySelector('input[name="heaterTypeNew"]:checked');
+            const removeTypeNew = document.querySelector('input[name="removeTypeNew"]:checked');
+            const locationNew = document.querySelector('input[name="locationNew"]:checked');
+            const energySourceNew = document.querySelector('input[name="energySourceNew"]:checked');
+            const bathroomsNew = document.querySelector('input[name="bathroomsNew"]:checked');
+            const emailNew = document.getElementById('emailNew').value;
+
+            if (!heaterTypeNew || !removeTypeNew || !locationNew || !energySourceNew || !bathroomsNew || !emailNew) {
+                document.getElementById('step-new-8-error').style.display = 'block';
+                return;
+            }
+            document.getElementById('step-new-8-error').style.display = 'none';
+
+            const confirmationSummaryNew = `
+    <p><strong>Water Heater Type:</strong> ${heaterTypeNew.value}</p>
+    <p><strong>Removed Type:</strong> ${removeTypeNew.value}</p>
+    <p><strong>Location:</strong> ${locationNew.value}</p>
+    <p><strong>Energy Source:</strong> ${energySourceNew.value}</p>
+    <p><strong>Bathrooms:</strong> ${bathroomsNew.value}</p>
+    <p><strong>Email:</strong> ${emailNew}</p>
+  `;
+            document.getElementById('confirmationSummaryNew').innerHTML = confirmationSummaryNew;
+            nextStepNew(9);
+        }
+
+        function submitFormNew() {
+            const heaterTypeNew = document.querySelector('input[name="heaterTypeNew"]:checked').value;
+            const removeTypeNew = document.querySelector('input[name="removeTypeNew"]:checked').value;
+            const locationNew = document.querySelector('input[name="locationNew"]:checked').value;
+            const energySourceNew = document.querySelector('input[name="energySourceNew"]:checked').value;
+            const bathroomsNew = document.querySelector('input[name="bathroomsNew"]:checked').value;
+
+            document.getElementById('resHeaterTypeNew').textContent = heaterTypeNew;
+            document.getElementById('resRemoveTypeNew').textContent = removeTypeNew;
+            document.getElementById('resLocationNew').textContent = locationNew;
+            document.getElementById('resEnergySourceNew').textContent = energySourceNew;
+            document.getElementById('resBathroomsNew').textContent = bathroomsNew;
+
+            let costNew = 0;
+            if (heaterTypeNew === 'Tankless') {
+                costNew += 2000;
+            } else {
+                costNew += 1500;
+            }
+
+            if (bathroomsNew === '3-4 bathrooms') {
+                costNew += 500;
+            } else if (bathroomsNew === '5+ bathrooms') {
+                costNew += 1000;
+            }
+
+            if (energySourceNew === 'Natural Gas or Propane') {
+                costNew += 400;
+            } else if (energySourceNew === 'Electric (heat pump)') {
+                costNew += 600;
+            } else if (energySourceNew === 'Fuel Oil') {
+                costNew += 700;
+            }
+
+            document.getElementById('resCostNew').textContent = costNew.toFixed(2);
+            nextStepNew(10);
+        }
+
+        function restartFormNew() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+
+            const labels = document.querySelectorAll('.options label');
+            labels.forEach(label => label.classList.remove('selected'));
+
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(s => s.classList.remove('active'));
+
+            document.getElementById('step-new-1').classList.add('active');
+            updateProgressNew(1);
+        }
+    </script>
 </body>
+
 </html>
